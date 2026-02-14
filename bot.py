@@ -27,4 +27,4 @@ def handle_message(message):
     except Exception as e:
         bot.reply_to(message, "Xatolik yuz berdi, qayta urining!")
 
-bot.polling()
+bot.infinity_polling(timeout=10, long_polling_timeout=5)
