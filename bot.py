@@ -20,7 +20,7 @@ def start(message):
 def handle_message(message):
     try:
         response = client.chat.completions.create(
-            model="meta-llama/llama-3.1-8b-instruct:free",
+            model="mistralai/mistral-7b-instruct:free",
             messages=[
                 {"role": "system", "content": "Sen Monarx AI san. O'zbek tilida javob ber."},
                 {"role": "user", "content": message.text}
