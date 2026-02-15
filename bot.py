@@ -1,12 +1,14 @@
 import telebot
 import os
-import google.generativeai as genai
+from openai import OpenAI
 
 BOT_TOKEN = os.environ.get('BOT_TOKEN')
-GEMINI_API_KEY = os.environ.get('GEMINI_API_KEY')
+OPENROUTER_API_KEY = os.environ.get('OPENROUTER_API_KEY')
 
-genai.configure(api_key=GEMINI_API_KEY)
-model = genai.GenerativeModel('gemini-2.0-flash')
+client = OpenAI(
+    base_url="https://openrouter.ai/api/v1",
+    api_key=OPENROUTER_API_KEY,
+)
 
 bot = telebot.TeleBot(BOT_TOKEN)
 
@@ -17,8 +19,14 @@ def start(message):
 @bot.message_handler(func=lambda message: True)
 def handle_message(message):
     try:
-        response = model.generate_content(message.text)
-        bot.reply_to(message, response.text)
+        response = client.chat.completions.create(
+            model="meta-llama/llama-3.1-8b-instruct:free",
+            messages=[
+                {"role": "system", "content": "Sen Monarx AI san. O'zbek tilida javob ber."},
+                {"role": "user", "content": message.text}
+            ]
+        )
+        bot.reply_to(message, response.choices[0].message.content)
     except Exception as e:
         bot.reply_to(message, f"Xato: {str(e)}")
 
