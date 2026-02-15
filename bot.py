@@ -1,12 +1,14 @@
-import os
 import telebot
-from groq import Groq
+import os
+import google.generativeai as genai
 
 BOT_TOKEN = os.environ.get('BOT_TOKEN')
-GROQ_API_KEY = os.environ.get('GROQ_API_KEY')
+GEMINI_API_KEY = os.environ.get('GEMINI_API_KEY')
+
+genai.configure(api_key=GEMINI_API_KEY)
+model = genai.GenerativeModel('gemini-1.5-flash')
 
 bot = telebot.TeleBot(BOT_TOKEN)
-client = Groq(api_key=GROQ_API_KEY)
 
 @bot.message_handler(commands=['start'])
 def start(message):
@@ -15,16 +17,9 @@ def start(message):
 @bot.message_handler(func=lambda message: True)
 def handle_message(message):
     try:
-        response = client.chat.completions.create(
-            model="llama3-8b-8192",
-            messages=[
-                {"role": "system", "content": "Sen Monarx AI san. O'zbek tilida javob ber."},
-                {"role": "user", "content": message.text}
-            ]
-        )
-        reply = response.choices[0].message.content
-        bot.reply_to(message, reply)
+        response = model.generate_content(message.text)
+        bot.reply_to(message, response.text)
     except Exception as e:
-        bot.reply_to(message, "Xatolik yuz berdi, qayta urining!")
+        bot.reply_to(message, f"Xato: {str(e)}")
 
 bot.infinity_polling(timeout=10, long_polling_timeout=5)
