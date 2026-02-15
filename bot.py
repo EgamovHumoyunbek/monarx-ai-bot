@@ -10,6 +10,14 @@ client = OpenAI(
     api_key=OPENROUTER_API_KEY,
 )
 
+MODELS = [
+    "openrouter/auto",
+    "meta-llama/llama-3.3-70b-instruct:free",
+    "nvidia/nemotron-nano-8b-instruct:free",
+    "mistralai/mistral-small-3.1-24b-instruct:free",
+    "google/gemma-3-27b-it:free",
+]
+
 bot = telebot.TeleBot(BOT_TOKEN)
 
 @bot.message_handler(commands=['start'])
@@ -18,16 +26,19 @@ def start(message):
 
 @bot.message_handler(func=lambda message: True)
 def handle_message(message):
-    try:
-        response = client.chat.completions.create(
-            model="deepseek/deepseek-r1-0528:free",
-            messages=[
-                {"role": "system", "content": "Sen Monarx AI san. O'zbek tilida javob ber."},
-                {"role": "user", "content": message.text}
-            ]
-        )
-        bot.reply_to(message, response.choices[0].message.content)
-    except Exception as e:
-        bot.reply_to(message, f"Xato: {str(e)}")
+    for model in MODELS:
+        try:
+            response = client.chat.completions.create(
+                model=model,
+                messages=[
+                    {"role": "system", "content": "Sen Monarx AI san. O'zbek tilida javob ber. Agar kimsan yoki qaysi AI deb so'rashsa, Men Monarx AI man deb javob ber."},
+                    {"role": "user", "content": message.text}
+                ]
+            )
+            bot.reply_to(message, response.choices[0].message.content)
+            return
+        except Exception:
+            continue
+    bot.reply_to(message, "Hozir serverlar band, biroz kutib qayta yozing!")
 
 bot.infinity_polling(timeout=10, long_polling_timeout=5)
